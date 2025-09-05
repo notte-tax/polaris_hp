@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chermem ミニボトル - Polaris</title>
+
+    <!-- ファビコンの追加 -->
+    <link rel="icon" type="image/png" href="Polaris-Logo.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Shippori Mincho -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Shippori Mincho', serif;
+            color: #333333;
+            background-color: #fdfcfa;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        .btn-primary {
+            background-color: #E6A4B4;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 164, 180, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 136, 163, 0.4);
+        }
+        .quantity-btn {
+            background-color: #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .quantity-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .thumbnail-container {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s, opacity 0.3s;
+            opacity: 0.7;
+            background-color: #f8f8f8;
+        }
+        .thumbnail-container:hover,
+        .thumbnail-container.active {
+            border-color: #E6A4B4;
+            opacity: 1;
+        }
+        .prose {
+            color: #333;
+        }
+        .prose h3 {
+            color: #333;
+            border-bottom: 1px solid #E6A4B4;
+            padding-bottom: 0.5rem;
+        }
+        .prose ul > li::before {
+            background-color: #E6A4B4;
+        }
+
+        /* Footer Video Background */
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+            z-index: 0;
+        }
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: -1;
+            object-fit: cover;
+        }
+        .video-container .video-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        footer.video-container .video-overlay {
+            background-color: rgba(25, 25, 35, 0.8);
+        }
+        footer .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cart-item-count {
+            display: none;
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background-color: #E6A4B4;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            height: 20px;
+            width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #header.scrolled .nav-link,
+        #header.scrolled .nav-link i,
+        #header.scrolled .nav-link .cart-item-count {
+            color: #555555;
+            text-shadow: none;
+        }
+
+        /* ハンバーガーメニューのスタイル */
+        #hamburger-btn { position: relative; z-index: 60; }
+        .hamburger-active .top-line {
+            transform: rotate(45deg) translate(5px, 6px);
+            background-color: #333;
+        }
+        .hamburger-active .middle-line {
+            opacity: 0;
+        }
+        .hamburger-active .bottom-line {
+            transform: rotate(-45deg) translate(5px, -6px);
+            background-color: #333;
+        }
+        #header .hamburger-line {
+            transition: background-color 0.4s ease-out, transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            background-color: #333333;
+            width: 32px;
+            height: 2px;
+        }
+        #mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.98);
+            z-index: 55;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+        }
+        #mobile-menu a {
+            font-size: 1.25rem;
+            margin: 1.25rem 0;
+            color: #555;
+        }
+
+        /* ★追加: ページトップボタンのスタイル */
+        #page-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #E6A4B4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 50;
+            transform: translateY(20px);
+        }
+        #page-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #page-top-btn:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <header id="header" class="sticky top-0 bg-white/80 backdrop-blur-lg z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-12 mr-2" onerror="this.onerror=null;this.src='https://placehold.co/48x48/ffffff/E6A4B4?text=P';">
+                <span class="text-2xl font-bold text-gray-800">Polaris</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html#concept" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">ボディートークとは</a>
+                <a href="index.html#service" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">セッションの流れ</a>
+                <a href="ec-site.html" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">商品一覧</a>
+                <a href="contact.html" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">お問い合わせ</a>
+                <a href="cart.html" class="text-gray-600 hover:text-[#E6A4B4] transition-colors relative">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-item-count absolute -top-2 -right-3 bg-[#E6A4B4] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+            </nav>
+            <div class="md:hidden flex items-center gap-4">
+                <a href="cart.html" class="text-[#333333] hover:text-[#E6A4B4] transition-colors relative">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                    <span class="cart-item-count absolute -top-2 -right-3 bg-[#E6A4B4] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+                <button id="hamburger-btn" class="z-50 space-y-1.5">
+                    <div class="hamburger-line top-line"></div>
+                    <div class="hamburger-line middle-line"></div>
+                    <div class="hamburger-line bottom-line"></div>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- モバイルメニューのHTML -->
+    <div id="mobile-menu">
+        <a href="index.html#concept" class="hover:text-[#E6A4B4]">ボディートークとは</a>
+        <a href="index.html#service" class="hover:text-[#E6A4B4]">セッションの流れ</a>
+        <a href="ec-site.html" class="hover:text-[#E6A4B4]">商品一覧</a>
+        <a href="contact.html" class="hover:text-[#E6A4B4]">お問い合わせ</a>
+        <a href="cart.html" class="text-[#E6A4B4] font-bold">カート</a>
+    </div>
+
+    <main>
+        <section class="py-12 md:py-20">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
+                    <!-- Image Gallery -->
+                    <div>
+                        <div class="bg-white rounded-lg border border-gray-100 p-4 mb-4 aspect-square flex justify-center items-center">
+                           <img id="main-image" src="minibottle.jpg" alt="chermem ミニボトル" class="max-w-full max-h-full rounded-md" style="object-fit: contain;">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="thumbnail-container active rounded-md flex justify-center items-center h-24" onclick="changeImage('minibottle.jpg', this)">
+                                <img src="minibottle.jpg" alt="Thumbnail 1" class="max-w-full max-h-full">
+                            </div>
+                            <div class="thumbnail-container rounded-md flex justify-center items-center h-24" onclick="changeImage('minibottle2.jpg', this)">
+                                <img src="minibottle2.jpg" alt="Thumbnail 2" class="max-w-full max-h-full">
+                            </div>
+                            <div class="thumbnail-container rounded-md flex justify-center items-center h-24" onclick="changeImage('chermem_introduce2.jpg', this)">
+                                <img src="chermem_introduce2.jpg" alt="Thumbnail 3" class="max-w-full max-h-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div id="product-info" data-id="chermem-mini" data-name="chermem ミニボトル" data-price="1600" data-image="minibottle.jpg">
+                        <h1 class="text-3xl md:text-4xl font-bold text-gray-800">chermem ミニボトル</h1>
+                        <p class="text-3xl font-bold text-gray-900 my-4">¥1,600 <span class="text-base font-normal text-gray-500">(税込)</span></p>
+                        <p class="text-gray-600 leading-relaxed mb-6">
+                            まずはお試ししたい方や、旅行などの持ち運び用に。<br>
+                            人気のデリケートゾーンジェル「chermem」のミニボトルです。約2週間お使いいただけます。
+                        </p>
+                        <div class="flex items-center mb-6">
+                            <label for="quantity" class="mr-4 font-bold">数量:</label>
+                            <div class="flex items-center border border-gray-300 rounded-md">
+                                <button onclick="changeQuantity(-1)" class="quantity-btn w-10 h-10 text-xl">-</button>
+                                <input id="quantity" type="text" value="1" class="w-12 h-10 text-center border-x" readonly>
+                                <button onclick="changeQuantity(1)" class="quantity-btn w-10 h-10 text-xl">+</button>
+                            </div>
+                        </div>
+                        <button onclick="addToCart()" class="btn-primary w-full py-3 rounded-md mt-4 text-base font-bold">
+                            <i class="fas fa-shopping-cart mr-2"></i>カートに入れる
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Description -->
+        <section class="pb-16 md:pb-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="border-t pt-12">
+                    <h2 class="text-2xl font-bold text-center mb-10">商品説明</h2>
+                    <div class="prose max-w-3xl mx-auto">
+                        <h3>【chermem】(シェルマム) ミニボトル</h3>
+                        <p>内容量 15ml</p>
+                        <p>
+                            産婦人科医が監修したデリケートゾーン用保湿ジェル「chermem」を手軽にお試しいただけるミニボトルです。ご旅行やジムなどへの持ち運びにも便利なサイズです。
+                        </p>
+                        
+                        <h3>こんな方におすすめ</h3>
+                        <ul>
+                            <li>chermemを初めてお使いになる方</li>
+                            <li>使用感を試してみたい方</li>
+                            <li>旅行や外出先でもケアを続けたい方</li>
+                        </ul>
+
+                        <h3>ご使用方法</h3>
+                        <p>
+                            清潔な手に適量（1〜2プッシュ）をとり、デリケートゾーンの気になる部分にやさしくなじませてください。入浴後などのご使用がおすすめです。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="video-container text-white">
+        <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"><source src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" type="video/mp4"></video>
+        <div class="video-overlay"></div>
+        <div class="footer-content container mx-auto px-6 py-12">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-4">Polaris</h3>
+                <nav class="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-8">
+                    <a href="index.html#concept" class="text-gray-300 hover:text-white">ボディートークとは</a>
+                    <a href="index.html#service" class="text-gray-300 hover:text-white">セッションの流れ</a>
+                    <a href="ec-site.html" class="text-gray-300 hover:text-white">商品一覧</a>
+                    <a href="contact.html" class="text-gray-300 hover:text-white">お問い合わせ</a>
+                </nav>
+                <div class="mb-6 text-gray-400">
+                    <p>サロン住所：北海道札幌市中央区 地下鉄東西線 バスセンター前駅 徒歩2分</p>
+                    <p class="text-sm">※詳しくは予約確定後にお伝えします。</p>
+                </div>
+                <p class="text-sm text-gray-400">&copy; 2024 Polaris. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ★追加: ページトップボタン -->
+    <a href="#" id="page-top-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+    </a>
+
+<script>
+    function changeImage(src, clickedElement) {
+        document.getElementById('main-image').src = src;
+        const thumbnails = document.querySelectorAll('.thumbnail-container');
+        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+        clickedElement.classList.add('active');
+    }
+
+    function changeQuantity(amount) {
+        const quantityInput = document.getElementById('quantity');
+        let currentValue = parseInt(quantityInput.value);
+        currentValue += amount;
+        if (currentValue < 1) currentValue = 1;
+        quantityInput.value = currentValue;
+    }
+
+    function addToCart() {
+        const productInfo = document.getElementById('product-info');
+        const product = {
+            id: productInfo.dataset.id,
+            name: productInfo.dataset.name,
+            price: parseInt(productInfo.dataset.price),
+            image: productInfo.dataset.image,
+            quantity: parseInt(document.getElementById('quantity').value)
+        };
+
+        let cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const existingItem = cart.find(item => item.id === product.id);
+
+        if (existingItem) {
+            existingItem.quantity += product.quantity;
+        } else {
+            cart.push(product);
+        }
+
+        localStorage.setItem('polarisCart', JSON.stringify(cart));
+        showCustomAlert('カートに商品を追加しました。', () => {
+            window.location.href = 'cart.html';
+        });
+        updateCartIcon();
+    }
+
+    function updateCartIcon() {
+        const cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const count = cart.reduce((total, item) => total + item.quantity, 0);
+        const countElements = document.querySelectorAll('.cart-item-count');
+
+        countElements.forEach(element => {
+            if (count > 0) {
+                element.textContent = count;
+                element.style.display = 'flex';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCartIcon();
+        
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (hamburgerBtn && mobileMenu) {
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('hamburger-active');
+                mobileMenu.classList.toggle('open');
+                document.body.style.overflowY = mobileMenu.classList.contains('open') ? 'hidden' : '';
+            });
+            mobileMenu.addEventListener('click', (e) => {
+                 if (e.target.tagName === 'A') {
+                    hamburgerBtn.classList.remove('hamburger-active');
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflowY = '';
+                 }
+            });
+        }
+
+        // ★追加: ページトップボタンの制御
+        const pageTopBtn = document.getElementById('page-top-btn');
+        if (pageTopBtn) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 400) {
+                    pageTopBtn.classList.add('visible');
+                } else {
+                    pageTopBtn.classList.remove('visible');
+                }
+            });
+            pageTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    });
+
+    // カスタムモーダル関数
+    function showCustomAlert(message, callback) {
+        const alertBox = document.createElement('div');
+        alertBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+        alertBox.innerHTML = `
+            <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
+                <p class="text-lg font-semibold mb-4">${message}</p>
+                <button id="alert-ok-btn" class="btn-primary px-6 py-2 rounded-md">OK</button>
+            </div>
+        `;
+        document.body.appendChild(alertBox);
+
+        document.getElementById('alert-ok-btn').addEventListener('click', () => {
+            document.body.removeChild(alertBox);
+            if (callback) {
+                callback();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショッピングカート - Polaris</title>
+
+    <!-- ファビコンの追加 -->
+    <link rel="icon" type="image/png" href="Polaris-Logo.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Shippori Mincho -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Shippori Mincho', serif;
+            color: #333333;
+            background-color: #fdfcfa;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        .btn-primary {
+            background-color: #E6A4B4;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 164, 180, 0.3);
+            /* ★変更: aタグでもボタンとして機能するようにflexboxを適用 */
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .btn-primary:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 136, 163, 0.4);
+        }
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        .quantity-btn {
+            background-color: #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .quantity-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .cart-item {
+            transition: opacity 0.3s ease-out;
+        }
+        .cart-item.removing {
+            opacity: 0;
+        }
+        
+        #header.scrolled .nav-link,
+        #header.scrolled .nav-link i,
+        #header.scrolled .nav-link .cart-item-count {
+            color: #555555;
+            text-shadow: none;
+        }
+
+        /* ハンバーガーメニューのスタイル */
+        #hamburger-btn { position: relative; z-index: 60; }
+        .hamburger-active .top-line {
+            transform: rotate(45deg) translate(5px, 6px);
+            background-color: #333;
+        }
+        .hamburger-active .middle-line {
+            opacity: 0;
+        }
+        .hamburger-active .bottom-line {
+            transform: rotate(-45deg) translate(5px, -6px);
+            background-color: #333;
+        }
+        #header .hamburger-line {
+            transition: background-color 0.4s ease-out, transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            background-color: #333333;
+            width: 32px;
+            height: 2px;
+        }
+        #mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.98);
+            z-index: 55;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+        }
+        #mobile-menu a {
+            font-size: 1.25rem;
+            margin: 1.25rem 0;
+            color: #555;
+        }
+
+        /* Footer Video Background */
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+            z-index: 0;
+        }
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: -1;
+            object-fit: cover;
+        }
+        .video-container .video-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        footer.video-container .video-overlay {
+            background-color: rgba(25, 25, 35, 0.8);
+        }
+        footer .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ★追加: ページトップボタンのスタイル */
+        #page-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #E6A4B4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 50;
+            transform: translateY(20px);
+        }
+        #page-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #page-top-btn:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <header id="header" class="sticky top-0 bg-white/80 backdrop-blur-lg z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center">
+                <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-12 mr-2" onerror="this.onerror=null;this.src='https://placehold.co/48x48/ffffff/E6A4B4?text=P';">
+                <span class="text-2xl font-bold text-gray-800">Polaris</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html#concept" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">ボディートークとは</a>
+                <a href="index.html#service" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">セッションの流れ</a>
+                <a href="ec-site.html" class="text-gray-600 hover:text-[#E6A4B4] transition-colors">商品一覧</a>
+                <a href="cart.html" class="text-[#E6A4B4] font-bold relative">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-item-count absolute -top-2 -right-3 bg-[#E6A4B4] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">0</span>
+                </a>
+            </nav>
+            <div class="md:hidden flex items-center gap-4">
+                <a href="cart.html" class="text-[#333333] hover:text-[#E6A4B4] transition-colors relative">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                    <span class="cart-item-count absolute -top-2 -right-3 bg-[#E6A4B4] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">0</span>
+                </a>
+                <button id="hamburger-btn" class="z-50 space-y-1.5">
+                    <div class="hamburger-line top-line"></div>
+                    <div class="hamburger-line middle-line"></div>
+                    <div class="hamburger-line bottom-line"></div>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="mobile-menu">
+        <a href="index.html#concept" class="hover:text-[#E6A4B4]">ボディートークとは</a>
+        <a href="index.html#service" class="hover:text-[#E6A4B4]">セッションの流れ</a>
+        <a href="ec-site.html" class="hover:text-[#E6A4B4]">商品一覧</a>
+        <a href="contact.html" class="hover:text-[#E6A4B4]">お問い合わせ</a>
+        <a href="cart.html" class="text-[#E6A4B4] font-bold">カート</a>
+    </div>
+
+    <main>
+        <section class="py-16 md:py-24" style="background: linear-gradient(180deg, #fdfcfa 0%, #fff 100%);">
+            <div class="container mx-auto px-6">
+                <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800">ショッピングカート</h1>
+
+                <div id="cart-container" class="mt-12">
+                    <div id="cart-items" class="bg-white rounded-lg shadow-md p-6">
+                        <!-- Cart items will be generated here by JavaScript -->
+                    </div>
+
+                    <div class="mt-8 flex flex-col md:flex-row justify-between items-start">
+                        <div class="w-full md:w-auto mb-4 md:mb-0">
+                             <a href="ec-site.html" class="btn-secondary py-3 px-6 rounded-md"><i class="fas fa-arrow-left mr-2"></i>買い物を続ける</a>
+                        </div>
+                        <div class="w-full md:w-1/3 bg-white rounded-lg shadow-md p-6">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-gray-600">小計</span>
+                                <span id="subtotal" class="font-bold">¥0</span>
+                            </div>
+                            <div class="flex justify-between mb-4">
+                                <span class="text-gray-600">送料</span>
+                                <span>計算中</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-xl border-t pt-4">
+                                <span>合計</span>
+                                <span id="total">¥0</span>
+                            </div>
+                            <!-- ★変更点: ご購入手続きへボタンに、ボタンのスタイルを適用するクラスを追加 -->
+                            <a id="checkout-btn" href="checkout.html" class="btn-primary w-full py-3 rounded-md mt-6 text-base font-bold text-center">ご購入手続きへ</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="empty-cart-message" class="hidden text-center mt-12 py-16 bg-white rounded-lg shadow-md">
+                    <p class="text-xl text-gray-500 mb-6">カートに商品がありません。</p>
+                    <a href="ec-site.html" class="btn-primary py-3 px-8 rounded-md">お買い物に戻る</a>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="video-container text-white">
+        <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"><source src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" type="video/mp4"></video>
+        <div class="video-overlay"></div>
+        <div class="footer-content container mx-auto px-6 py-12">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-4">Polaris</h3>
+                <nav class="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-8">
+                    <a href="index.html#concept" class="text-gray-300 hover:text-white">ボディートークとは</a>
+                    <a href="index.html#service" class="text-gray-300 hover:text-white">セッションの流れ</a>
+                    <a href="ec-site.html" class="text-gray-300 hover:text-white">商品一覧</a>
+                    <a href="contact.html" class="text-gray-300 hover:text-white">お問い合わせ</a>
+                </nav>
+                <div class="mb-6 text-gray-400">
+                    <p>サロン住所：北海道札幌市中央区 地下鉄東西線 バスセンター前駅 徒歩2分</p>
+                    <p class="text-sm">※詳しくは予約確定後にお伝えします。</p>
+                </div>
+                <p class="text-sm text-gray-400">&copy; 2024 Polaris. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ★追加: ページトップボタン -->
+    <a href="#" id="page-top-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+    </a>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCartItems();
+        updateCartIcon();
+
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (hamburgerBtn && mobileMenu) {
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('hamburger-active');
+                mobileMenu.classList.toggle('open');
+                document.body.style.overflowY = mobileMenu.classList.contains('open') ? 'hidden' : '';
+            });
+            mobileMenu.addEventListener('click', (e) => {
+                 if (e.target.tagName === 'A') {
+                    hamburgerBtn.classList.remove('hamburger-active');
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflowY = '';
+                 }
+            });
+        }
+
+        // ★追加: ページトップボタンの制御
+        const pageTopBtn = document.getElementById('page-top-btn');
+        if (pageTopBtn) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 400) {
+                    pageTopBtn.classList.add('visible');
+                } else {
+                    pageTopBtn.classList.remove('visible');
+                }
+            });
+            pageTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    });
+
+    function renderCartItems() {
+        const cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const cartItemsContainer = document.getElementById('cart-items');
+        cartItemsContainer.innerHTML = '';
+
+        if (cart.length === 0) {
+            document.getElementById('cart-container').style.display = 'none';
+            document.getElementById('empty-cart-message').style.display = 'block';
+        } else {
+            document.getElementById('cart-container').style.display = 'block';
+            document.getElementById('empty-cart-message').style.display = 'none';
+            cart.forEach(item => {
+                const itemHTML = `
+                    <div class="cart-item flex flex-col sm:flex-row justify-between items-center py-4 border-b last:border-b-0" data-id="${item.id}" data-price="${item.price}">
+                        <div class="flex items-center mb-4 sm:mb-0">
+                            <img src="${item.image}" alt="${item.name}" class="w-24 h-24 object-contain rounded-md mr-6">
+                            <div>
+                                <h3 class="font-bold">${item.name}</h3>
+                                <p class="text-gray-500">¥${item.price.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="flex items-center border border-gray-300 rounded-md mr-6">
+                                <button onclick="changeQuantity(this, -1)" class="quantity-btn w-10 h-10 text-xl">-</button>
+                                <input type="text" value="${item.quantity}" class="quantity-input w-12 h-10 text-center border-x" readonly>
+                                <button onclick="changeQuantity(this, 1)" class="quantity-btn w-10 h-10 text-xl">+</button>
+                            </div>
+                            <p class="font-bold w-24 text-right item-subtotal">¥${(item.price * item.quantity).toLocaleString()}</p>
+                            <button onclick="removeItem(this)" class="text-gray-400 hover:text-red-500 ml-6"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>`;
+                cartItemsContainer.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
+        document.getElementById('subtotal').textContent = `¥${subtotal.toLocaleString()}`;
+        document.getElementById('total').textContent = `¥${subtotal.toLocaleString()}`;
+    }
+
+    function changeQuantity(button, amount) {
+        const itemElement = button.closest('.cart-item');
+        const productId = itemElement.dataset.id;
+        let cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const itemInCart = cart.find(item => item.id === productId);
+
+        if (itemInCart) {
+            itemInCart.quantity += amount;
+            if (itemInCart.quantity < 1) {
+                cart = cart.filter(item => item.id !== productId);
+            }
+        }
+
+        localStorage.setItem('polarisCart', JSON.stringify(cart));
+        renderCartItems();
+        updateCartIcon();
+    }
+
+    function removeItem(button) {
+        const itemElement = button.closest('.cart-item');
+        const productId = itemElement.dataset.id;
+        let cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        cart = cart.filter(item => item.id !== productId);
+        localStorage.setItem('polarisCart', JSON.stringify(cart));
+
+        itemElement.classList.add('removing');
+        setTimeout(() => {
+            renderCartItems();
+            updateCartIcon();
+        }, 300);
+    }
+
+    function updateCartIcon() {
+        const cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+        const count = cart.reduce((total, item) => total + item.quantity, 0);
+        const countElements = document.querySelectorAll('.cart-item-count');
+
+        countElements.forEach(element => {
+            if (count > 0) {
+                element.textContent = count;
+                element.style.display = 'flex';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

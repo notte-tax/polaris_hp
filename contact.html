@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お問い合わせ | Polaris</title>
+    
+    <!-- ファビコンの追加 -->
+    <link rel="icon" type="image/png" href="Polaris-Logo.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Shippori Mincho -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* サイト全体の基本スタイル設定 */
+        body { font-family: 'Shippori Mincho', serif; color: #333333; background-color: #fff; }
+        h1, h2, h3, h4, h5, h6 { font-weight: 500; letter-spacing: 0.05em; }
+        
+        /* コンテンツのフェードインアニメーション用スタイル */
+        .animate-item { opacity: 0; transition: opacity 1s ease-out, transform 1s ease-out; }
+        .fade-in-up { transform: translateY(30px); }
+        .animate-item.visible { opacity: 1; transform: translate(0, 0); }
+
+        /* ヘッダーのスタイル */
+        #header {
+            background-color: transparent;
+            transition: background-color 0.3s ease-in-out;
+        }
+        #header.scrolled {
+             background-color: rgba(255, 255, 255, 0.95);
+             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        #header .nav-link, #header .logo-link span {
+            transition: color 0.4s ease-out, text-shadow 0.4s ease-out;
+        }
+        #header .hamburger-line {
+            transition: background-color 0.4s ease-out, transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        
+        /* 初期状態のヘッダースタイル */
+        #header .logo-link span,
+        #header .nav-link,
+        #header .nav-link i {
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+        #header .cart-item-count {
+             color: white;
+             text-shadow: none;
+        }
+        #header .hamburger-line {
+            background-color: white;
+        }
+
+        /* スクロール後のヘッダースタイル */
+        #header.scrolled .logo-link span,
+        #header.scrolled .nav-link,
+        #header.scrolled .nav-link i,
+        #header.scrolled .cart-item-count {
+            color: #333333; 
+            text-shadow: none;
+        }
+        #header.scrolled .nav-link:hover { color: #E6A4B4; }
+        #header.scrolled .hamburger-line { background-color: #333333; }
+        
+        /* ハンバーガーメニューのスタイル */
+        #hamburger-btn { position: relative; z-index: 60; }
+        .hamburger-active .top-line { 
+            transform: rotate(45deg) translate(5px, 6px); 
+            background-color: #333;
+        }
+        .hamburger-active .middle-line { 
+            opacity: 0; 
+        }
+        .hamburger-active .bottom-line { 
+            transform: rotate(-45deg) translate(5px, -6px); 
+            background-color: #333;
+        }
+
+        #mobile-menu { position: fixed; top: 0; left: 0; width: 80%; max-width: 300px; height: 100vh; background-color: rgba(255, 255, 255, 0.98); z-index: 55; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1); }
+        #mobile-menu.open { transform: translateX(0); }
+        #mobile-menu a { font-size: 1.25rem; margin: 1.25rem 0; color: #555; }
+        
+        /* ビデオ背景のスタイル */
+        .video-container { position: relative; width: 100%; overflow: hidden; background-color: #000; z-index: 0; }
+        .video-container video { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto; transform: translateX(-50%) translateY(-50%); z-index: -1; object-fit: cover; }
+        .video-container .video-overlay { position: absolute; inset: 0; z-index: 0; }
+        footer.video-container .video-overlay { background-color: rgba(25, 25, 35, 0.8); }
+        footer .footer-content { position: relative; z-index: 1; }
+        
+        /* お問い合わせページのヘッダー */
+        .page-header.video-container {
+            height: 40vh;
+            min-height: 300px;
+        }
+        .page-header .video-overlay {
+            background-color: rgba(25, 25, 35, 0.6);
+        }
+        
+        /* お問い合わせフォームのスタイル */
+        .contact-intro span { display: block; }
+        .form-group { margin-bottom: 1rem; }
+        .required-badge { background-color: #E6A4B4; color: white; padding: 2px 8px; font-size: 0.75rem; border-radius: 9999px; vertical-align: middle; margin-left: 0.5rem; }
+        label { font-size: 1rem; font-weight: bold; margin-bottom: 0.25rem; display: block; }
+        input[type="text"], input[type="email"], input[type="tel"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #E6A4B4;
+            box-shadow: 0 0 0 3px rgba(230, 164, 180, 0.4);
+        }
+        textarea { resize: vertical; min-height: 120px; }
+        .submit-button {
+            background-color: #E6A4B4;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        .submit-button:hover { background-color: #D988A3; }
+        
+        #page-top-btn { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            width: 50px; 
+            height: 50px; 
+            background-color: #E6A4B4; 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            opacity: 0; 
+            visibility: hidden; 
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s; 
+            z-index: 50; 
+            transform: translateY(20px); 
+        }
+        #page-top-btn.visible { 
+            opacity: 1; 
+            visibility: visible; 
+            transform: translateY(0); 
+        }
+        #page-top-btn:hover { 
+            background-color: #D988A3;
+            transform: translateY(-2px);
+        }
+
+        .cart-item-count {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div style="overflow-x: hidden;">
+        <!-- ヘッダー -->
+        <header id="header" class="fixed top-0 left-0 w-full z-50">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="index.html" class="logo-link flex items-center">
+                    <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-12 mr-2" onerror="this.onerror=null;this.src='https://placehold.co/48x48/ffffff/E6A4B4?text=Logo';">
+                    <span class="text-2xl font-bold">Polaris</span>
+                </a>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="index.html#concept" class="nav-link">ボディートークとは</a>
+                    <a href="index.html#service" class="nav-link">セッションの流れ</a>
+                    <a href="pricing.html" class="nav-link">料金</a>
+                    <a href="coming-soon.html" class="nav-link">商品一覧</a>
+                    <a href="index.html#profile" class="nav-link">プロフィール</a>
+                    <a href="contact.html" class="nav-link font-bold text-[#E6A4B4]">お問い合わせ</a>
+                    <a href="coming-soon.html" class="nav-link relative">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
+                </nav>
+                <div class="md:hidden flex items-center gap-4">
+                    <a href="coming-soon.html" class="nav-link relative">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                    </a>
+                    <button id="hamburger-btn" class="z-50 space-y-1.5">
+                        <div class="w-8 h-0.5 hamburger-line top-line"></div>
+                        <div class="w-8 h-0.5 hamburger-line middle-line"></div>
+                        <div class="w-8 h-0.5 hamburger-line bottom-line"></div>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- モバイルメニュー -->
+        <div id="mobile-menu">
+            <a href="index.html#concept" class="hover:text-[#E6A4B4]">ボディートークとは</a>
+            <a href="index.html#service" class="hover:text-[#E6A4B4]">セッションの流れ</a>
+            <a href="pricing.html" class="hover:text-[#E6A4B4]">料金</a>
+            <a href="coming-soon.html" class="hover:text-[#E6A4B4]">商品一覧</a>
+            <a href="index.html#profile" class="hover:text-[#E6A4B4]">プロフィール</a>
+            <a href="contact.html" class="text-[#E6A4B4] font-bold">お問い合わせ</a>
+        </div>
+
+        <main>
+            <!-- ページヘッダー -->
+            <section class="page-header video-container relative flex items-center justify-center text-white">
+                <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/176851/pexels-photo-176851.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+                    <source src="https://videos.pexels.com/video-files/853875/853875-hd_1920_1080_25fps.mp4" type="video/mp4">
+                </video>
+                <div class="video-overlay"></div>
+                <div class="relative z-10 text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold" style="color: #EADCA6; text-shadow: 1px 1px 8px rgba(0,0,0,0.6);">お問い合わせ</h1>
+                </div>
+            </section>
+
+            <!-- お問い合わせフォームセクション -->
+            <div class="page-content py-16 md:py-24">
+                <div class="container mx-auto px-6 max-w-2xl">
+                    <div class="animate-item fade-in-up mb-4 text-center">
+                        <p class="contact-intro text-[#555555] leading-relaxed">
+                            <span>サービスに関するご質問やご相談など、お気軽にお問い合わせください。</span><br>
+                            <span>内容を確認後、担当者よりご連絡いたします。</span>
+                        </p>
+                    </div>
+
+                    <form action="#" method="POST" class="contact-form animate-item fade-in-up">
+                        <div class="form-group">
+                            <label for="name">お名前 <span class="required-badge">必須</span></label>
+                            <input type="text" id="name" name="name" required placeholder="例：山田 太郎">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">メールアドレス <span class="required-badge">必須</span></label>
+                            <input type="email" id="email" name="email" required placeholder="例：your-email@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">電話番号 (任意)</label>
+                            <input type="tel" id="phone" name="phone" placeholder="例：090-1234-5678">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">件名 <span class="required-badge">必須</span></label>
+                            <select id="subject" name="subject" required class="w-full">
+                                <option value="" disabled selected>選択してください</option>
+                                <option value="ご予約について">ご予約について</option>
+                                <option value="セッションについて">セッションについて</option>
+                                <option value="商品について">商品について</option>
+                                <option value="その他">その他</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">お問い合わせ内容 <span class="required-badge">必須</span></label>
+                            <textarea id="message" name="message" rows="6" required placeholder="ご質問やご相談内容を具体的にご記入ください。&#13;&#10;ご予約の方は、ご希望の日時をいくつかご記入いただくとスムーズです。"></textarea>
+                        </div>
+
+                        <div class="form-submit text-center mt-6">
+                            <button type="submit" class="submit-button">送信する</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+        
+        <!-- フッターセクション -->
+        <footer class="video-container text-white">
+            <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"><source src="https://videos.pexels.com/video-files/3129957/3129957-hd_1920_1080_25fps.mp4" type="video/mp4"></video>
+            <div class="video-overlay"></div>
+            <div class="footer-content container mx-auto px-6 py-12">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-4">Polaris</h3>
+                    <nav class="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-6">
+                        <a href="index.html#concept" class="text-gray-300 hover:text-white">ボディートークとは</a>
+                        <a href="index.html#service" class="text-gray-300 hover:text-white">セッションの流れ</a>
+                        <a href="pricing.html" class="text-gray-300 hover:text-white">料金</a>
+                        <a href="coming-soon.html" class="text-gray-300 hover:text-white">商品一覧</a>
+                        <a href="index.html#profile" class="text-gray-300 hover:text-white">プロフィール</a>
+                        <a href="contact.html" class="text-gray-300 hover:text-white">お問い合わせ</a>
+                    </nav>
+                    <div class="mb-6 text-gray-400">
+                        <p>サロン住所：北海道札幌市中央区 地下鉄東西線 バスセンター前駅 徒歩2分</p>
+                        <p class="text-sm">※詳しくは予約確定後にお伝えします。</p>
+                    </div>
+                    <p class="text-sm text-gray-500">&copy; 2024 Polaris. All Rights Reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <a href="#" id="page-top-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+    </a>
+
+    <!-- JavaScriptセクション -->
+    <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const header = document.getElementById('header');
+        const pageTopBtn = document.getElementById('page-top-btn');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+
+            if (window.scrollY > 400) {
+                pageTopBtn.classList.add('visible');
+            } else {
+                pageTopBtn.classList.remove('visible');
+            }
+        });
+        
+        if (pageTopBtn) {
+            pageTopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+        
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (hamburgerBtn && mobileMenu) {
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('hamburger-active');
+                mobileMenu.classList.toggle('open');
+                document.body.style.overflowY = mobileMenu.classList.contains('open') ? 'hidden' : '';
+            });
+            mobileMenu.addEventListener('click', (e) => {
+                 if (e.target.tagName === 'A') {
+                    hamburgerBtn.classList.remove('hamburger-active');
+                    mobileMenu.classList.remove('open');
+                    document.body.style.overflowY = '';
+                 }
+            });
+        }
+        
+        const fadeInTargets = document.querySelectorAll('.animate-item');
+        if (fadeInTargets.length > 0) {
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            fadeInTargets.forEach(target => {
+                observer.observe(target);
+            });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    return;
+                }
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    const header = document.getElementById('header');
+                    const headerOffset = header.offsetHeight;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                }
+            });
+        });
+
+        /*
+        function updateCartIcon() {
+            const cart = JSON.parse(localStorage.getItem('polarisCart')) || [];
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            const countElements = document.querySelectorAll('.cart-item-count');
+
+            countElements.forEach(element => {
+                if (count > 0) {
+                    element.textContent = count;
+                    element.style.display = 'flex';
+                } else {
+                    element.style.display = 'none';
+                }
+            });
+        }
+        updateCartIcon();
+        */
+    });
+    </script>
+</body>
+</html>
+

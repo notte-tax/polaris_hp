@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaris - 身体の対話を取り戻す</title>
+    
+    <!-- ファビコンの追加 -->
+    <link rel="icon" type="image/png" href="Polaris-Logo.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Shippori Mincho -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Slick Slider for Carousel -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Shippori Mincho', serif;
+            color: #333333;
+            background-color: #fff;
+        }
+
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn-primary {
+            background-color: #E6A4B4;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 164, 180, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 136, 163, 0.4);
+        }
+
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background-color: #fff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+            transition-delay: 0.5s;
+        }
+        #loading-screen.loaded {
+            opacity: 0;
+            visibility: hidden;
+        }
+        #loading-title {
+            opacity: 0;
+            animation: fadeInOut 1.0s ease-in-out forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        #loading-text {
+            color: #EADCA6;
+            margin-top: 1rem;
+        }
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+        #loading-text .dot {
+            animation: blink 1.4s infinite both;
+        }
+        #loading-text .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        #loading-text .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+
+        /* Main Visual Text Animation */
+        .char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(25px);
+            animation: slide-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        @keyframes slide-up {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Scroll-triggered Animations */
+        .animate-item {
+            opacity: 0;
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .fade-in-up { transform: translateY(30px); }
+        .fade-in-left { transform: translateX(-30px); }
+        .fade-in-right { transform: translateX(30px); }
+        
+        .animate-item.visible {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        /* Image Reveal Animation */
+        .img-reveal {
+            position: relative;
+            overflow: hidden;
+        }
+        .img-reveal::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FADADD; /* Reveal color */
+            transform: scaleX(1);
+            transform-origin: right;
+            transition: transform 1.2s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        .img-reveal.visible::after {
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+        .img-reveal img {
+            opacity: 0;
+            transition: opacity 0.1s linear 0.5s;
+        }
+        .img-reveal.visible img {
+            opacity: 1;
+        }
+        
+        /* Video Background Style (Common for Header & Footer) */
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+            z-index: 0;
+        }
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: -1;
+            object-fit: cover;
+        }
+        .video-container .video-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+        
+        #main-visual {
+            height: 100vh;
+        }
+        #main-visual .video-overlay {
+             background: radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%);
+        }
+
+        /* Header Styling */
+        #header {
+            background-color: transparent;
+            transition: background-color 0.3s ease-in-out;
+        }
+        
+        #header.scrolled {
+             background-color: white;
+             box-shadow: none;
+        }
+        #header .nav-link, #header .logo-link span {
+            transition: color 0.4s ease-out, text-shadow 0.4s ease-out;
+        }
+        #header .hamburger-line {
+            transition: background-color 0.4s ease-out, transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        
+        #header .logo-link span,
+        #header .nav-link,
+        #header .nav-link i,
+        #header .hamburger-line {
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+         #header .nav-link .cart-item-count {
+            color: white;
+            text-shadow: none;
+        }
+
+
+        #header.scrolled .logo-link span,
+        #header.scrolled .nav-link,
+        #header.scrolled .nav-link i,
+        #header.scrolled .nav-link .cart-item-count {
+            color: #333333; 
+            text-shadow: none;
+        }
+        #header.scrolled .nav-link:hover { color: #E6A4B4; }
+        #header.scrolled .hamburger-line { background-color: #333333; }
+        #header.scrolled .btn-transparent {
+            color: #E6A4B4;
+            border-color: #E6A4B4;
+            text-shadow: 0 0 3px rgba(255,255,255,0.7);
+        }
+        #header.scrolled .btn-transparent:hover {
+            background-color: #E6A4B4;
+            color: white;
+            text-shadow: none;
+        }
+
+        /* ハンバーガーメニューのアイコンを常に最前面に配置 */
+        #hamburger-btn {
+            position: relative;
+            z-index: 60; 
+        }
+        .hamburger-active .top-line { 
+            transform: rotate(45deg) translate(5px, 6px); 
+            background-color: #333;
+        }
+        .hamburger-active .middle-line { 
+            opacity: 0; 
+        }
+        .hamburger-active .bottom-line { 
+            transform: rotate(-45deg) translate(5px, -6px); 
+            background-color: #333;
+        }
+        #header.scrolled .hamburger-line {
+            background-color: #333;
+        }
+
+        #mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.98);
+            z-index: 55;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+        }
+        #mobile-menu a {
+            font-size: 1.25rem;
+            margin: 1.25rem 0;
+            color: #555;
+        }
+        
+        .cart-item-count {
+            display: none;
+        }
+
+        /* Counter Hover Effect */
+        .counter-container {
+            transition: transform 0.3s ease-in-out;
+        }
+        .counter-container:hover {
+            transform: translateY(-10px);
+        }
+        .counter-container .counter-number {
+             transition: color 0.3s ease-in-out;
+        }
+        .counter-container:hover .counter-number {
+            color: #D988A3; /* Darker Pink */
+        }
+        
+        /* Testimonials Carousel (Slick Slider) */
+        .testimonial-carousel-wrapper {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .testimonial-carousel .slick-slide {
+            padding: 0 15px;
+        }
+        .testimonial-carousel .slick-dots {
+            bottom: -40px;
+        }
+        .testimonial-carousel .slick-dots li button:before {
+            font-size: 12px;
+            color: #E6A4B4;
+            opacity: 0.5;
+        }
+        .testimonial-carousel .slick-dots li.slick-active button:before {
+            color: #E6A4B4;
+            opacity: 1;
+        }
+        .slick-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(230, 164, 180, 0.7);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+            opacity: 1 !important;
+        }
+        .slick-arrow:focus {
+             outline: none;
+             /* ----- 修正箇所 ----- */
+             /* クリック時に背景が透明になるのを防ぐため、元の背景色を指定 */
+             background-color: rgba(230, 164, 180, 0.7);
+        }
+        .slick-arrow:hover {
+            background-color: #D988A3;
+        }
+        .slick-prev { left: -50px; }
+        .slick-next { right: -50px; }
+
+        @media (max-width: 900px) {
+            .slick-prev { left: -10px; }
+            .slick-next { right: -10px; }
+        }
+
+
+        /* Footer Styling */
+        footer.video-container .video-overlay {
+            background-color: rgba(25, 25, 35, 0.8);
+        }
+        footer .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-transparent {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-transparent:hover {
+            background-color: white;
+            color: #333;
+        }
+
+        #page-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #E6A4B4;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+            z-index: 50;
+            transform: translateY(20px);
+        }
+        #page-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #page-top-btn:hover {
+            background-color: #D988A3;
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div style="overflow-x: hidden;">
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-20 mb-4 animate-pulse" onerror="this.onerror=null;this.src='https://placehold.co/80x80/ffffff/E6A4B4?text=Logo';">
+            <p id="loading-text">
+                Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+            </p>
+        </div>
+
+        <div id="main-content">
+            <!-- Header -->
+            <header id="header" class="fixed top-0 left-0 w-full z-50">
+                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                    <a href="#" class="logo-link flex items-center">
+                        <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-12 mr-2" onerror="this.onerror=null;this.src='https://placehold.co/48x48/ffffff/E6A4B4?text=Logo';">
+                        <span class="text-2xl font-bold text-white" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">Polaris</span>
+                    </a>
+                    
+                    <nav class="hidden md:flex items-center space-x-8">
+                        <a href="#concept" class="nav-link text-white hover:text-[#E6A4B4] transition-colors" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">ボディートークとは</a>
+                        <a href="#service" class="nav-link text-white hover:text-[#E6A4B4] transition-colors" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">セッションの流れ</a>
+                        <a href="#profile" class="nav-link text-white hover:text-[#E6A4B4] transition-colors" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">プロフィール</a>
+                        <a href="#pricing-info" class="nav-link text-white hover:text-[#E6A4B4] transition-colors" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">料金</a>
+                        <a href="coming-soon.html" class="nav-link text-white hover:text-[#E6A4B4] transition-colors" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">商品一覧</a>
+                        <a href="contact.html" class="btn-transparent px-6 py-2 rounded-full">お問い合わせ</a>
+                        <a href="coming-soon.html" class="nav-link text-white hover:text-[#E6A4B4] transition-colors relative" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.4);">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                    </nav>
+
+                    <div class="md:hidden flex items-center space-x-4">
+                        <a href="coming-soon.html" class="nav-link text-white relative z-50">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                        <button id="hamburger-btn" class="z-50 space-y-1.5">
+                            <div class="w-8 h-0.5 bg-white hamburger-line top-line"></div>
+                            <div class="w-8 h-0.5 bg-white hamburger-line middle-line"></div>
+                            <div class="w-8 h-0.5 bg-white hamburger-line bottom-line"></div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- モバイルメニュー -->
+            <div id="mobile-menu">
+                <a href="#concept" class="hover:text-[#E6A4B4]">ボディートークとは</a>
+                <a href="#service" class="hover:text-[#E6A4B4]">セッションの流れ</a>
+                <a href="#profile" class="hover:text-[#E6A4B4]">プロフィール</a>
+                <a href="#pricing-info" class="hover:text-[#E6A4B4]">料金</a>
+                <a href="coming-soon.html" class="hover:text-[#E6A4B4]">商品一覧</a>
+                <a href="contact.html" class="text-[#E6A4B4] font-bold">お問い合わせ</a>
+            </div>
+
+            <main>
+                <!-- Main Visual Section -->
+                <section id="main-visual" class="video-container">
+                    <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/176851/pexels-photo-176851.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+                        <source src="https://videos.pexels.com/video-files/853875/853875-hd_1920_1080_25fps.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-overlay"></div>
+                    <div class="relative w-full h-full flex flex-col justify-center items-center text-center p-6 z-10">
+                        <h1 class="text-4xl md:text-6xl font-medium leading-tight mb-4" style="color: #EADCA6; text-shadow: 1px 1px 8px rgba(0,0,0,0.6);">
+                            <span id="main-title" class="block md:inline">身体の声に</span><span id="main-title-2" class="block md:inline">耳を澄ます</span>
+                        </h1>
+                        <p id="main-subtitle" class="text-lg md:text-2xl font-light" style="color: #EADCA6; text-shadow: 1px 1px 6px rgba(0,0,0,0.5);">
+                            ボディートークで、本来のあなたの輝きを取り戻すお手伝いを
+                        </p>
+                    </div>
+                    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white z-10">
+                        <a href="#concept">
+                            <div class="animate-bounce">
+                                <span class="text-xs tracking-widest" style="font-family: 'Noto Sans JP', sans-serif;">SCROLL</span>
+                                <div class="w-px h-8 bg-white mx-auto mt-1"></div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Concept Section -->
+                <section id="concept" class="py-20 md:py-32 bg-gray-50">
+                    <div class="container mx-auto px-6 text-center">
+                        <div class="animate-item fade-in-up mb-6">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333]">
+                                ボディートークとは？
+                            </h2>
+                        </div>
+                        <div class="animate-item fade-in-up">
+                            <p class="max-w-3xl mx-auto text-[#555555] leading-relaxed mb-12">
+                                ボディートークは、心と体が本来持っている自然治癒力を最大限に引き出すための、安全で効果的なヘルスケアです。身体の各部が互いにコミュニケーションを取れなくなった時、不調は現れます。ボディートークは、そのコミュニケーションを再確立し、心身のバランスを整えることで、健康を根本から取り戻すことを目指します。
+                            </p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-3 gap-10">
+                            <div class="animate-item fade-in-up p-8 bg-white rounded-lg shadow-lg">
+                                <div class="text-[#E6A4B4] mb-4"><i class="fas fa-heart-pulse fa-3x"></i></div>
+                                <h3 class="text-xl font-bold text-[#b59e59] mb-3">自然治癒力を引き出す</h3>
+                                <p class="text-[#555555]">身体が持つ本来の治癒能力を尊重し、その働きを最大限に高めることで、様々な不調の改善を促します。</p>
+                            </div>
+                            <div class="animate-item fade-in-up p-8 bg-white rounded-lg shadow-lg" style="transition-delay: 150ms;">
+                                <div class="text-[#E6A4B4] mb-4"><i class="fas fa-brain fa-3x"></i></div>
+                                <h3 class="text-xl font-bold text-[#b59e59] mb-3">心と体のバランス</h3>
+                                <p class="text-[#555555]">ストレス、感情、信念などが体に与える影響に着目し、心と体の両面から包括的にバランスを整えていきます。</p>
+                            </div>
+                            <div class="animate-item fade-in-up p-8 bg-white rounded-lg shadow-lg" style="transition-delay: 300ms;">
+                                <div class="text-[#E6A4B4] mb-4"><i class="fas fa-magnifying-glass-chart fa-3x"></i></div>
+                                <h3 class="text-xl font-bold text-[#b59e59] mb-3">根本原因へのアプローチ</h3>
+                                <p class="text-[#555555]">表面的な症状だけを追うのではなく、不調の背景にある根本的な原因を探り出し、優先順位に従って施術します。</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Service Section -->
+                <section id="service" class="py-20 md:py-32 bg-white">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-16 animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">セッションの流れ</h2>
+                            <p class="text-[#555555]">カウンセリングから施術まで、丁寧に行います。</p>
+                        </div>
+                        <div class="flex flex-wrap items-center -mx-4">
+                            <div class="w-full md:w-1/2 px-4 mb-8 md:mb-0 animate-item fade-in-right">
+                                <div class="img-reveal rounded-lg shadow-xl">
+                                    <img src="session.jpg" alt="セッションのイメージ画像" class="w-full" onerror="this.onerror=null;this.src='https://placehold.co/600x450/eeeeee/333333?text=画像読込エラー';">
+                                </div>
+                            </div>
+                            <div class="w-full md:w-1/2 px-4 animate-item fade-in-left">
+                                <ul class="space-y-6 text-[#555555]">
+                                    <li class="flex items-start"><div class="text-xl font-bold text-[#E6A4B4] mr-4">01.</div><div><h4 class="font-bold text-lg text-[#333333] mb-1">カウンセリング</h4><p>現在のお悩みや心身の状態について、詳しくお話を伺います。どんな些細なことでもお聞かせください。</p></div></li>
+                                    <li class="flex items-start"><div class="text-xl font-bold text-[#E6A4B4] mr-4">02.</div><div><h4 class="font-bold text-lg text-[#333333] mb-1">施術</h4><p>身体からの声に耳を傾け、心身のコミュニケーションを妨げている箇所を特定し、バランスを整えていきます。</p></div></li>
+                                    <li class="flex items-start"><div class="text-xl font-bold text-[#E6A4B4] mr-4">03.</div><div><h4 class="font-bold text-lg text-[#333333] mb-1">アフターケア</h4><p>施術後のフィードバックや次回のセッションについてご提案させていただきます。</p></div></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Testimonials Section -->
+                <section id="testimonials" class="py-20 md:py-32 bg-gray-50">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-16 animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">お客様の声</h2>
+                            <p class="text-[#555555]">多くの方々から喜びの声をいただいています。</p>
+                        </div>
+                        <div class="testimonial-carousel-wrapper animate-item fade-in-up">
+                            <div class="testimonial-carousel">
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"全てが必然に起こっていることのような気がしてきました。（中略）セッションで私の心が緩んできたんだなってすごく実感したんです。"</p>
+                                        <p class="text-right font-medium text-[#333333]">40代 女性</p>
+                                    </div>
+                                </div>
+                                 <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">～咳で1週間まとまった睡眠が取れなかったクライアント様～<br>1日目のセッション後の報告："6時間近く眠れました。"<br>2日目のセッション後の報告："前日よりも眠れました。"</p>
+                                        <p class="text-right font-medium text-[#333333]">30代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"自分に戻った感覚、体と心が一致した感覚でした。自分で自分を幸せにする、その感覚がむくむくっとわいてきました。"</p>
+                                        <p class="text-right font-medium text-[#333333]">50代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"忘れていた記憶がよみがえり、今の自分の感情と繋がりました。"</p>
+                                        <p class="text-right font-medium text-[#333333]">60代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"あれからスッキリ。寝不足気味なのに意識がハッキリ。頭も爽快です。舞子さんのことばで初めての氣づきと大きなゆるみがありました。"</p>
+                                        <p class="text-right font-medium text-[#333333]">50代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"体の左側の調子が良いのがいま現在も続いております！（中略）腰が不調と思っていましたが、骨盤も関係あるんだ、と不思議な気分です。"</p>
+                                        <p class="text-right font-medium text-[#333333]">50代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"セッション後スッキリものすごく寝た気分で、疲れが取れた感じがしています。（中略）楽しく癒しの時間を過ごせました！"</p>
+                                        <p class="text-right font-medium text-[#333333]">40代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"私の次男の管理が98%から50%に劇的に減りました！！これからも、手放して行きたいと思います！！"</p>
+                                        <p class="text-right font-medium text-[#333333]">50代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"不思議な体験でしたが、スーッと私の雑念が溶けているような気がしました。救われた気がしました。もう大丈夫！とまで思えました♡"</p>
+                                        <p class="text-right font-medium text-[#333333]">50代 女性</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-white p-8 rounded-lg shadow-lg mx-auto max-w-2xl h-full flex flex-col justify-center">
+                                        <p class="text-[#555555] mb-4 text-center">"見ないように無理してた、って自分に蓋してた、って気づけました。"</p>
+                                        <p class="text-right font-medium text-[#333333]">30代 女性</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Achievements Section -->
+                <section id="achievements" class="py-20 md:py-32 bg-white">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-16 animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">実績</h2>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8 text-center">
+                            <div class="animate-item fade-in-up counter-container">
+                                <p class="text-lg text-[#555555]">お客様満足度</p>
+                                <p class="text-5xl md:text-6xl font-bold text-[#E6A4B4] my-2 counter-number">
+                                    <span class="counter" data-target="95">0</span>%
+                                </p>
+                            </div>
+                            <div class="animate-item fade-in-up counter-container" style="transition-delay: 150ms;">
+                                <p class="text-lg text-[#555555]">セッション実績</p>
+                                <p class="text-5xl md:text-6xl font-bold text-[#E6A4B4] my-2 counter-number">
+                                    <span class="counter" data-target="80">0</span>回以上</p>
+                            </div>
+                        </div>
+                        <div class="mt-16 text-right">
+                            <p class="text-sm text-gray-500">※2025年9月現在</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile" class="py-20 md:py-32 bg-gray-50">
+                    <div class="container mx-auto px-6">
+                         <div class="text-center mb-16 animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333]">プロフィール</h2>
+                         </div>
+                         <div class="flex flex-wrap items-center justify-center -mx-4">
+                            <div class="w-full sm:w-1/3 md:w-1/4 px-4 mb-8 sm:mb-0 flex justify-center animate-item fade-in-right">
+                                 <div class="img-reveal rounded-full shadow-xl">
+                                    <img src="introduce.jpg" alt="プロフィール写真" class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover" onerror="this.onerror=null;this.src='https://placehold.co/192x192/eeeeee/333333?text=画像';">
+                                </div>
+                            </div>
+                            <div class="w-full sm:w-2/3 md:w-1/2 px-4 text-center sm:text-left animate-item fade-in-left">
+                                <h3 class="text-2xl font-bold text-[#333333] mb-2">岩瀬 舞子</h3>
+                                <p class="text-[#E6A4B4] font-semibold mb-4">認定ボディートーク施術士</p>
+                                <p class="text-[#555555] leading-relaxed">
+                                    私自身が心身の不調に悩んだ経験から、ボディートークと出会いました。この素晴らしい療法を通じて、一人でも多くの方が本来の健康と輝きを取り戻すお手伝いができればと願っています。身体の声に寄り添い、全力でサポートさせていただきます。
+                                </p>
+                            </div>
+                         </div>
+                    </div>
+                </section>
+
+                <!-- Pricing Section -->
+                <section id="pricing-info" class="py-20 md:py-32 bg-white">
+                    <div class="container mx-auto px-6 text-center">
+                         <div class="animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">料金のご案内</h2>
+                            <p class="max-w-2xl mx-auto text-[#555555] mb-8">
+                                各種セッションの料金については、料金ページにて詳しくご案内しております。<br>
+                                対面、オンライン・遠隔セッションなど、ご希望に合わせたプランをお選びいただけます。
+                            </p>
+                            <a href="pricing.html" class="inline-block bg-[#E6A4B4] text-white text-lg px-10 py-4 rounded-full hover:bg-[#D988A3] transition-colors shadow-lg">
+                                料金はこちらからご確認ください <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                         </div>
+                    </div>
+                </section>
+                
+                <!-- Products Section -->
+                <section id="products" class="py-20 md:py-32 bg-gray-50">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-16 animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">おすすめ商品</h2>
+                            <p class="text-[#555555]">あなたに寄り添うアイテムを</p>
+                        </div>
+                        <div id="product-list" class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:w-2/3 mx-auto">
+                            <!-- 商品1: chermem -->
+                            <div class="animate-item fade-in-up">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 h-full flex flex-col">
+                                    <a href="coming-soon.html">
+                                        <img src="chermem.jfif" alt="chermem デリケートゾーンジェル" class="w-full h-64 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=chermem';">
+                                    </a>
+                                    <div class="p-6 text-center flex-grow flex flex-col">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2"><a href="coming-soon.html" class="hover:text-[#E6A4B4]">chermem デリケートゾーンジェル</a></h3>
+                                        <p class="text-lg text-[#E6A4B4] font-bold mb-4">¥8,250</p>
+                                        <div class="mt-auto pt-4">
+                                            <a href="coming-soon.html" class="inline-block btn-primary px-8 py-3 rounded-full text-sm font-semibold">詳しく見る</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 商品2: ミニボトル -->
+                            <div class="animate-item fade-in-up" style="transition-delay: 150ms;">
+                                <div class="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 h-full flex flex-col">
+                                    <a href="coming-soon.html">
+                                        <img src="minibottle.jpg" alt="chermem ミニボトル" class="w-full h-64 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/f0f0f0/333333?text=ミニボトル';">
+                                    </a>
+                                    <div class="p-6 text-center flex-grow flex flex-col">
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2"><a href="coming-soon.html" class="hover:text-[#E6A4B4]">chermem ミニボトル</a></h3>
+                                        <p class="text-lg text-[#E6A4B4] font-bold mb-4">¥1,600</p>
+                                        <div class="mt-auto pt-4">
+                                            <a href="coming-soon.html" class="inline-block btn-primary px-8 py-3 rounded-full text-sm font-semibold">詳しく見る</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-16 animate-item fade-in-up">
+                            <a href="coming-soon.html" class="inline-block bg-[#E6A4B4] text-white text-lg px-10 py-4 rounded-full hover:bg-[#D988A3] transition-colors shadow-lg">
+                                すべての商品を見る <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contact Section -->
+                <section id="contact" class="py-20 md:py-32 bg-gray-100">
+                    <div class="container mx-auto px-6 text-center">
+                         <div class="animate-item fade-in-up">
+                            <h2 class="text-3xl md:text-4xl font-bold text-[#333333] mb-4">お問い合わせ</h2>
+                            <p class="max-w-2xl mx-auto text-[#555555] mb-8">
+                                ご予約、ご質問など、お気軽にお問い合わせください。<br>
+                                セッションをご希望の方は、ご希望の日時をいくつかお書き添えの上、ご連絡いただけますとスムーズです。
+                            </p>
+                            <a href="contact.html" class="inline-block bg-[#E6A4B4] text-white text-lg px-10 py-4 rounded-full hover:bg-[#D988A3] transition-colors shadow-lg">
+                                <i class="fas fa-envelope mr-2"></i> お問い合わせはこちら
+                            </a>
+                         </div>
+                    </div>
+                </section>
+
+            </main>
+            
+            <!-- Footer -->
+            <footer class="video-container text-white">
+                <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+                    <source src="https://videos.pexels.com/video-files/312997/312997-hd_1920_1080_25fps.mp4" type="video/mp4">
+                </video>
+                <div class="video-overlay"></div>
+                <div class="footer-content container mx-auto px-6 py-12">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold mb-4">Polaris</h3>
+                        <nav class="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-6">
+                            <a href="#concept" class="text-gray-300 hover:text-white">ボディートークとは</a>
+                            <a href="#service" class="text-gray-300 hover:text-white">セッションの流れ</a>
+                            <a href="#pricing-info" class="text-gray-300 hover:text-white">料金</a>
+                            <a href="coming-soon.html" class="text-gray-300 hover:text-white">商品一覧</a>
+                            <a href="#profile" class="text-gray-300 hover:text-white">プロフィール</a>
+                            <a href="contact.html" class="text-gray-300 hover:text-white">お問い合わせ</a>
+                        </nav>
+                        <div class="mb-6 text-gray-400">
+                            <p>サロン住所：北海道札幌市中央区 地下鉄東西線 バスセンター前駅 徒歩2分</p>
+                            <p class="text-sm">※詳しくは予約確定後にお伝えします。</p>
+                        </div>
+                        <p class="text-sm text-gray-500">&copy; 2024 Polaris. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <a href="#" id="page-top-btn">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
+        </a>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        
+        function animateText(elementId, delay = 0) {
+            const element = document.getElementById(elementId);
+            if (!element) return 0;
+            const text = element.textContent.trim();
+            element.innerHTML = '';
+            
+            let charCount = 0;
+            text.split('').forEach((char) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.style.animationDelay = `${delay + charCount * 0.05}s`;
+                element.appendChild(span);
+                charCount++;
+            });
+            return charCount * 0.05;
+        }
+
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            loadingScreen.classList.add('loaded');
+            
+            setTimeout(() => {
+                mainContent.style.opacity = '1';
+                const titleDuration = animateText('main-title', 0.2);
+                const title2Duration = animateText('main-title-2', 0.2 + titleDuration);
+                animateText('main-subtitle', 0.2 + titleDuration + title2Duration);
+            }, 600); 
+        });
+
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('hamburger-active');
+            mobileMenu.classList.toggle('open');
+            document.body.style.overflowY = mobileMenu.classList.contains('open') ? 'hidden' : '';
+        });
+        
+        mobileMenu.addEventListener('click', (e) => {
+             if (e.target.tagName === 'A') {
+                hamburgerBtn.classList.remove('hamburger-active');
+                mobileMenu.classList.remove('open');
+                document.body.style.overflowY = '';
+             }
+        });
+
+        const countUp = (el) => {
+            const target = +el.dataset.target;
+            const duration = 2000; 
+            let startTimestamp = null;
+
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                const easedProgress = 1 - Math.pow(1 - progress, 5);
+                const currentValue = Math.floor(easedProgress * target);
+
+                el.textContent = currentValue.toLocaleString();
+
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    el.textContent = target.toLocaleString();
+                }
+            };
+
+            window.requestAnimationFrame(step);
+        };
+
+        const animatedItems = document.querySelectorAll('.animate-item, .img-reveal');
+        const appearOptions = {
+            threshold: 0.2,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                
+                entry.target.classList.add('visible');
+
+                const counters = entry.target.querySelectorAll('.counter');
+                if (counters.length > 0) {
+                     counters.forEach(counter => {
+                        if (!counter.dataset.counted) {
+                            countUp(counter);
+                            counter.dataset.counted = 'true';
+                        }
+                    });
+                }
+                
+                if(!entry.target.querySelector('.counter')) {
+                   observer.unobserve(entry.target);
+                }
+            });
+        }, appearOptions);
+
+        animatedItems.forEach(item => {
+            appearOnScroll.observe(item);
+        });
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+                    return;
+                }
+
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    const header = document.getElementById('header');
+                    const headerOffset = header.offsetHeight;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+
+        const header = document.getElementById('header');
+        const pageTopBtn = document.getElementById('page-top-btn');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+
+            if (window.scrollY > 400) {
+                pageTopBtn.classList.add('visible');
+            } else {
+                pageTopBtn.classList.remove('visible');
+            }
+        });
+        
+        // Initialize Slick Slider
+        $('.testimonial-carousel').slick({
+            dots: true,
+            infinite: true,
+            speed: 500,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            adaptiveHeight: true,
+            autoplay: true,
+            autoplaySpeed: 8000,
+            pauseOnHover: true,
+            arrows: true,
+            prevArrow: '<button type="button" class="slick-prev"><i class="fas fa-chevron-left"></i></button>',
+            nextArrow: '<button type="button" class="slick-next"><i class="fas fa-chevron-right"></i></button>'
+        });
+    });
+    </script>
+</body>
+</html>
+
