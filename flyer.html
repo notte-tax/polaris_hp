@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaris - A4チラシ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* A4サイズ (210mm x 297mm) のコンテナ */
+        body {
+            font-family: 'Shippori Mincho', serif;
+            color: #333333;
+            background-color: #f3f4f6; /* 編集ページの背景色 */
+            -webkit-print-color-adjust: exact; /* Chrome/Safariで背景色を印刷 */
+            color-adjust: exact; /* 標準 */
+        }
+        .a4-container {
+            width: 210mm;
+            height: 297mm;
+            margin: 20px auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .main-color { color: #E6A4B4; }
+        .bg-main-color { background-color: #E6A4B4; }
+        .accent-color { color: #b59e59; }
+        .bg-accent-color-light { background-color: #f7f3e8; }
+
+        /* 印刷時用の設定 */
+        @media print {
+            @page {
+                /* ページのサイズをA4に指定し、ブラウザの余白をなくします */
+                size: A4;
+                margin: 0;
+            }
+
+            /* 編集画面用のスタイルをリセット */
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            
+            /* コンテナを印刷用に調整 */
+            .a4-container {
+                margin: 0;
+                box-shadow: none;
+                /* widthとheightをページの100%にすることで、A4サイズにフィットさせます */
+                width: 100%;
+                height: 100%;
+                /* overflowはもともとhiddenなので、コンテンツがはみ出すのを防ぎます */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="a4-container p-6 flex flex-col">
+
+        <!-- ヘッダー -->
+        <header class="flex justify-between items-center border-b-2 border-gray-200 pb-4">
+            <div class="flex items-center">
+                <img src="Polaris-Logo.png" alt="Polaris Logo" class="h-20 mr-4" onerror="this.onerror=null;this.src='https://placehold.co/80x80/ffffff/E6A4B4?text=Logo';">
+                <div>
+                    <p class="font-bold text-3xl">Polaris</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm main-color font-semibold tracking-widest mb-1">【 完全紹介制 】</p>
+                <h1 class="text-3xl font-bold tracking-wider">身体の声に、耳を澄ます</h1>
+                <p class="text-lg accent-color">心と体の自然治癒力を引き出すボディートーク</p>
+            </div>
+        </header>
+
+        <main class="flex-grow mt-6 grid grid-cols-3 gap-8 mb-4">
+            <!-- 左カラム -->
+            <div class="col-span-2 pr-6 border-r">
+                
+                <!-- ボディートークとは -->
+                <section>
+                    <h2 class="text-xl font-bold border-l-4 border-[#E6A4B4] pl-3 mb-3">ボディートークとは？</h2>
+                    <p class="text-sm leading-relaxed">
+                        心と体が本来持っている自然治癒力を最大限に引き出すための、安全で効果的なヘルスケアです。身体の各部が互いにコミュニケーションを取れなくなった時、不調は現れます。ボディートークは、そのコミュニケーションを再確立し、心身のバランスを整えることで、健康を根本から取り戻すことを目指します。
+                    </p>
+                    <div class="grid grid-cols-3 gap-4 mt-4 text-center">
+                        <div class="bg-accent-color-light p-3 rounded-lg">
+                            <i class="fas fa-heart-pulse fa-2x main-color"></i>
+                            <h3 class="font-bold text-sm mt-1 accent-color">自然治癒力を<br>引き出す</h3>
+                        </div>
+                        <div class="bg-accent-color-light p-3 rounded-lg">
+                            <i class="fas fa-brain fa-2x main-color"></i>
+                            <h3 class="font-bold text-sm mt-1 accent-color">心と体の<br>バランス調整</h3>
+                        </div>
+                        <div class="bg-accent-color-light p-3 rounded-lg">
+                             <i class="fas fa-magnifying-glass-chart fa-2x main-color"></i>
+                            <h3 class="font-bold text-sm mt-1 accent-color">根本原因への<br>アプローチ</h3>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- セッションの流れ -->
+                <section class="mt-8">
+                    <h2 class="text-xl font-bold border-l-4 border-[#E6A4B4] pl-3 mb-4">セッションの流れ</h2>
+                    <div class="flex items-center">
+                        <div class="w-1/2 pr-4">
+                             <img src="session.jpg" alt="セッションのイメージ" class="rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/600x450/eeeeee/333333?text=セッション風景';">
+                        </div>
+                        <div class="w-1/2 text-sm">
+                            <ol class="space-y-3">
+                                <li class="flex items-start">
+                                    <div class="font-bold text-lg main-color mr-2">1.</div>
+                                    <div><strong class="block">カウンセリング</strong>現在のお悩みや心身の状態について、詳しくお話を伺います。</div>
+                                </li>
+                                 <li class="flex items-start">
+                                    <div class="font-bold text-lg main-color mr-2">2.</div>
+                                    <div><strong class="block">施術</strong>身体からの声に耳を傾け、心身のコミュニケーションを妨げている箇所を特定し、バランスを整えます。</div>
+                                </li>
+                                 <li class="flex items-start">
+                                    <div class="font-bold text-lg main-color mr-2">3.</div>
+                                    <div><strong class="block">アフターケア</strong>施術後のフィードバックを行い、今後のご提案をさせていただきます。</div>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- こんな方におすすめ -->
+                <section class="mt-8">
+                    <h2 class="text-xl font-bold border-l-4 border-[#E6A4B4] pl-3 mb-3">こんな方におすすめ</h2>
+                    <div class="space-y-2 text-sm p-3 bg-gray-50 rounded-lg">
+                        <p class="flex items-center"><span class="main-color mr-2 font-bold">✓</span>老若男女どなたでも、安心して受けていただけます。</p>
+                        <p class="flex items-center"><span class="main-color mr-2 font-bold">✓</span>原因のわからない心身の不調にお悩みの方。</p>
+                        <p class="flex items-center"><span class="main-color mr-2 font-bold">✓</span>ストレスや感情の浮き沈みを整え、穏やかな毎日を送りたい方。</p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 右カラム -->
+            <div class="col-span-1 flex flex-col">
+                
+                <!-- プロフィール -->
+                <section class="text-center">
+                    <img src="introduce.jpg" alt="プロフィール写真" class="w-32 h-32 rounded-full object-cover mx-auto shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/150x150/eeeeee/333333?text=写真';">
+                    <h3 class="text-lg font-bold mt-3 mb-1">岩瀬 舞子</h3>
+                    <p class="text-xs main-color font-semibold">米国IBA認定ボディートーク施術士</p>
+                    <p class="text-xs leading-relaxed mt-2 text-left p-3 bg-accent-color-light rounded-lg">
+                        私自身が心身の不調に悩んだ経験から、ボディートークと出会いました。この素晴らしい療法を通じ、一人でも多くの方が本来の健康と輝きを取り戻すお手伝いができればと願っています。
+                    </p>
+                </section>
+
+                <!-- 料金のご案内 -->
+                <section class="mt-5">
+                    <h2 class="text-lg font-bold text-center mb-2 accent-color">料金のご案内</h2>
+                    <div class="border-2 border-gray-200 rounded-lg p-3 text-sm space-y-3">
+                        <div>
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="font-bold text-gray-800">対面セッション</h4>
+                                <p class="font-bold main-color">10,000円</p>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">施術士と直接お会いし、より深くリラックスしたい方へ。</p>
+                        </div>
+                        <hr>
+                        <div>
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="font-bold text-gray-800">オンライン・遠隔</h4>
+                                <p class="font-bold main-color">5,000円</p>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">ご自宅などお好きな場所から受けられます。遠方の方にも。</p>
+                        </div>
+                        <hr>
+                        <div>
+                            <div class="flex justify-between items-baseline">
+                                <h4 class="font-bold text-gray-800">お子様向け</h4>
+                                <p class="font-bold main-color">3,000円</p>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">お子様の健やかな成長をサポートします。</p>
+                        </div>
+                    </div>
+                    <p class="text-center text-xs text-gray-500 mt-2">※表示価格はすべて税込みです。</p>
+                </section>
+                
+                <!-- アクセス -->
+                <section class="mt-4 text-center">
+                     <img src="QR_contact.png" alt="お問い合わせQRコード" class="mx-auto w-28 h-28" onerror="this.onerror=null;this.src='https://placehold.co/112x112/ffffff/333333?text=QRコード';">
+                    <p class="text-xs font-bold mt-1">ご予約・お問い合わせはこちら</p>
+                </section>
+
+            </div>
+        </main>
+        
+        <!-- フッター -->
+        <footer class="mt-auto border-t-2 border-gray-200 pt-3 text-center text-xs text-gray-500">
+             <p class="font-bold text-base text-gray-700">Polaris <span class="text-sm ml-2">ポラリス</span></p>
+             <p class="mt-1"><i class="fas fa-map-marker-alt mr-1 main-color"></i>北海道札幌市中央区（地下鉄東西線 バスセンター前駅 近く）</p>
+             <p>※サロンの詳しい住所は、ご予約確定後にお伝えいたします。</p>
+             <p class="mt-1 font-sans">🌐 https://www.polaris-bodytalk.com/</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
+
+
+
+
+
+
+

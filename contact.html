@@ -218,7 +218,7 @@
         <main>
             <!-- ページヘッダー -->
             <section class="page-header video-container relative flex items-center justify-center text-white">
-                <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/176851/pexels-photo-1768ご自身1.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+                <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/176851/pexels-photo-176851.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
                     <source src="https://videos.pexels.com/video-files/853875/853875-hd_1920_1080_25fps.mp4" type="video/mp4">
                 </video>
                 <div class="video-overlay"></div>
@@ -252,6 +252,12 @@
                         <div class="form-group">
                             <label for="phone">電話番号 (任意)</label>
                             <input type="tel" id="phone" name="phone" placeholder="例：090-1234-5678">
+                        </div>
+
+                        <!-- 紹介者入力欄 -->
+                        <div class="form-group">
+                            <label for="introducer">ご紹介者様のお名前 <span class="required-badge">必須</span></label>
+                            <input type="text" id="introducer" name="introducer" required placeholder="例：佐藤 愛子 様">
                         </div>
 
                         <div class="form-group">
@@ -410,4 +416,3 @@
     </script>
 </body>
 </html>
-
